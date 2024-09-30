@@ -3,10 +3,8 @@
 
 <footer>
 	<p>
-		Made by <a
-			href="https://www.linkedin.com/in/lan-lebar"
-			target="_blank"
-			rel="noopener noreferrer">Lan Lebar</a
+		<a href="https://www.linkedin.com/in/lan-lebar" target="_blank" rel="noopener noreferrer"
+			>Lan Lebar</a
 		>
 		|
 		<a href="https://ko-fi.com/lebaaar" target="_blank" rel="noopener noreferrer">Donations</a>

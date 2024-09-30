@@ -1,31 +1,86 @@
 <script lang="ts">
-	export let showLoginResiterModal: boolean;
+	import SignInWithGoogle from './shared/SignInWithGoogle.svelte';
+	export let showModal: boolean;
+	export let modalMode: 'login' | 'register' = 'login';
+	export let profileRegisterType: 'user' | 'gym' = 'user';
 
 	let dialog: HTMLDialogElement;
 
-	$: if (dialog && showLoginResiterModal) dialog.showModal();
+	$: if (dialog && showModal) dialog.showModal();
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-noninteractive-element-interactions -->
 <dialog
 	bind:this={dialog}
-	on:close={() => (showLoginResiterModal = false)}
+	on:close={() => (showModal = false)}
 	on:click|self={() => dialog.close()}
 >
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<div on:click|stopPropagation>
-		<slot name="header" />
-		<hr />
-		<slot />
-		<hr />
-		<!-- svelte-ignore a11y-autofocus -->
-		<button autofocus on:click={() => dialog.close()}>close modal</button>
+		{#if modalMode === 'login'}
+			<h2>Login</h2>
+			{#if profileRegisterType === 'user'}
+				<p>Login to your user account</p>
+			{:else}
+				<p>Login to your gym profile</p>
+			{/if}
+
+			<form action="">
+				<label for="email">Email</label>
+				<input type="email" id="email" />
+				<br />
+				<label for="password">Password</label>
+				<input type="password" id="password" />
+
+				<div class="button-container">
+					<button type="submit" class="text-center">Login</button>
+				</div>
+			</form>
+
+			<div class="my-2">
+				<SignInWithGoogle />
+			</div>
+
+			<p class="mb-0">
+				No account?
+				<button class="link-button" on:click={() => (modalMode = 'register')}>Register</button>
+			</p>
+		{:else}
+			<h2>Register</h2>
+			{#if profileRegisterType === 'user'}
+				<p>Create a new user account</p>
+			{:else}
+				<p>Create a new gym account</p>
+			{/if}
+
+			<form action="">
+				<label for="email">Email</label>
+				<input type="email" id="email" />
+				<br />
+				<label for="password">Password</label>
+				<input type="password" id="password" />
+
+				<div class="button-container">
+					<button type="submit" class="text-center">Register</button>
+				</div>
+			</form>
+
+			<div class="my-2">
+				<SignInWithGoogle />
+			</div>
+
+			<p class="mb-0">
+				Already a member?
+				<button class="link-button" on:click={() => (modalMode = 'login')}>Login</button>
+			</p>
+		{/if}
 	</div>
 </dialog>
 
 <style>
 	dialog {
-		max-width: 32em;
+		max-width: 90%;
+		width: 32rem;
 		border-radius: 0.2em;
 		border: none;
 		padding: 0;
@@ -60,5 +115,21 @@
 	}
 	button {
 		display: block;
+	}
+	.button-container {
+		display: flex;
+		justify-content: center;
+		margin-top: 1rem;
+	}
+	.link-button {
+		display: inline;
+		padding: 0;
+		background: none;
+		border: none;
+		color: var(--primary-color);
+		cursor: pointer;
+	}
+	.link-button:hover {
+		text-decoration: underline;
 	}
 </style>
