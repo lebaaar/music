@@ -10,12 +10,11 @@ export const gyms = pgTable('gyms', {
 
 export const users = pgTable('users', {
     userId: serial('user_id').primaryKey(),
-    displayName: varchar('display_name', { length: 255 }).notNull(),
+    displayName: text('display_name').notNull(),
     email: varchar('email', { length: 255 }).notNull().unique(),
-    password: varchar('password', { length: 255 }).notNull(),
+    password: varchar('password', { length: 255 }),
     joinedDate: timestamp('joined_date').notNull(),
-    apiKey: text('api_key'),
-    profileType: integer('profile_type'),
+    authBy: varchar('authBy', { length: 255 }),
 });
 
 export const songRequests = pgTable('song_requests', {

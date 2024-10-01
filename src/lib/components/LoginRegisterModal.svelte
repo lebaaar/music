@@ -54,6 +54,9 @@
 			{/if}
 
 			<form action="">
+				<label for="name">Name</label>
+				<input type="text" id="name" />
+				<br />
 				<label for="email">Email</label>
 				<input type="email" id="email" />
 				<br />

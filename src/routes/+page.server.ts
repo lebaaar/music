@@ -1,25 +1,12 @@
-import { db } from "$lib/db/index";
-import { users } from "$lib/db/schema";
-
-export async function load() {
-    // await db.insert(users).values({
-    //     displayName: "John Doe",
-    //     email: "text",
-    //     password: "text",
-    //     joinedDate: new Date(),
-    //     apiKey: "text",
-    //     profileType: 1
-    // });
-    const allUsers = await db.select().from(users);
-
-    return { allUsers };
-}
-
-
 import { redirect } from "@sveltejs/kit";
 import { OAuth2Client } from "google-auth-library";
 import { SECRET_CLIENT_ID, SECRET_CLIENT_SECRET } from "$env/static/private";
 import { WEB_API_URL } from "$lib/const.js";
+
+export async function load() {
+    // Number of all recommended songs...
+    return {};
+}
 
 export const actions = {
     OAuth2: async () => {
@@ -33,10 +20,10 @@ export const actions = {
 
         const authUrl = oauthClient.generateAuthUrl({
             access_type: "offline",
-            scope: "https://www.googleapis.com/auth/userinfo.profile openid",
+            scope: "https://www.googleapis.com/auth/userinfo.profile openid email",
             prompt: "consent",
         });
 
         throw redirect(302, authUrl);
-    },
+    }
 };
