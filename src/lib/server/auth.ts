@@ -1,5 +1,4 @@
 import bcrypt from 'bcrypt';
-import { jwtDecode } from 'jwt-decode';
 import type { RequestEvent } from '../../routes/$types';
 import type { DecodedJwtPayload } from '$lib/types/types';
 import jwt from 'jsonwebtoken';
@@ -18,22 +17,17 @@ export const authenticateUser = (event: RequestEvent): DecodedJwtPayload | null 
         return null;
     }
 
-    // Get values from JWT
-    const decodedJwt: DecodedJwtPayload = jwtDecode<DecodedJwtPayload>(token);
-
-    // Verify the token
+    let decodedJwtPayload: DecodedJwtPayload | null = null;
     jwt.verify(token, SECRET_JWT_KEY, (err, decoded) => {
         // Check for JWT errros (expired...)
         if (err) {
             return null;
         }
-        return decodedJwt;
-    }
-    );
+        decodedJwtPayload = decoded as DecodedJwtPayload;
+    });
 
-    return null;
+    return decodedJwtPayload;
 }
-
 
 /**
  * Hash a password using bcrypt

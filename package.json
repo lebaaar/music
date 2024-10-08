@@ -46,7 +46,6 @@
 		"drizzle-orm": "^0.33.0",
 		"google-auth-library": "^9.14.1",
 		"jsonwebtoken": "^9.0.2",
-		"jwt-decode": "^4.0.0",
 		"postgres": "^3.4.4",
 		"supabase": "^1.200.3"
 	}
