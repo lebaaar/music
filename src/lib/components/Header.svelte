@@ -6,6 +6,9 @@
 </script>
 
 <header class="container mt-2">
+	<form method="post" action="/logout">
+		<button type="submit" class="link-button">Logout</button>
+	</form>
 	<div class="row d-flex justify-content-center align-items-center">
 		<div class="col-6 text-center">
 			<h1 class="m-0">Gym music</h1>
