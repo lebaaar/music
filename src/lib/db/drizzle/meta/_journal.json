@@ -22,6 +22,13 @@
       "when": 1727763619674,
       "tag": "0002_awesome_jamie_braddock",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1728418083555,
+      "tag": "0003_real_big_bertha",
+      "breakpoints": true
     }
   ]
 }

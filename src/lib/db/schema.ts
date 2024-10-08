@@ -12,7 +12,7 @@ export const users = pgTable('users', {
     userId: serial('user_id').primaryKey(),
     displayName: text('display_name').notNull(),
     email: varchar('email', { length: 255 }).notNull().unique(),
-    password: varchar('password', { length: 255 }),
+    password: text('password'),
     joinedDate: timestamp('joined_date').notNull(),
     authBy: varchar('authBy', { length: 255 }),
 });
