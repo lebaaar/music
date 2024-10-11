@@ -3,6 +3,7 @@
 	export let showModal: boolean;
 	export let modalMode: 'login' | 'register' = 'login';
 	export let profileRegisterType: 'user' | 'gym' = 'user';
+	export let form;
 
 	let dialog: HTMLDialogElement;
 
@@ -25,12 +26,14 @@
 				<p>Login to your gym profile</p>
 			{/if}
 
-			<form action="">
+			<form method="POST" action="?/login">
+				{#if form?.missing}<p class="error">The email field is required</p>{/if}
+				{#if form?.incorrect}<p class="error">Invalid credentials!</p>{/if}
 				<label for="email">Email</label>
-				<input type="email" id="email" />
+				<input type="email" id="email" name="email" required />
 				<br />
 				<label for="password">Password</label>
-				<input type="password" id="password" />
+				<input type="password" id="password" name="password" required />
 
 				<div class="button-container">
 					<button type="submit" class="text-center">Login</button>
@@ -53,15 +56,15 @@
 				<p>Create a new gym account</p>
 			{/if}
 
-			<form action="">
+			<form method="POST" action="?/register">
 				<label for="name">Name</label>
-				<input type="text" id="name" />
+				<input type="text" id="name" name="name" required />
 				<br />
 				<label for="email">Email</label>
-				<input type="email" id="email" />
+				<input type="email" id="email" name="email" required />
 				<br />
 				<label for="password">Password</label>
-				<input type="password" id="password" />
+				<input type="password" id="password" name="password" required />
 
 				<div class="button-container">
 					<button type="submit" class="text-center">Register</button>
@@ -76,6 +79,10 @@
 				Already a member?
 				<button class="link-button" on:click={() => (modalMode = 'login')}>Login</button>
 			</p>
+		{/if}
+
+		{#if form?.invalid || form?.incorrect || form?.missing}
+			<p>Invalid creds</p>
 		{/if}
 	</div>
 </dialog>

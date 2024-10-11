@@ -1,15 +1,19 @@
 <script lang="ts">
-	import { isAuthenticated } from '$lib/stores/auth.ts';
 	import Switch from '$lib/components/shared/Switch.svelte';
-	import type { PageData } from './$types';
+	import type { ActionData, PageData } from './$types';
 	import LoginRegisterModal from '$lib/components/LoginRegisterModal.svelte';
 
-	let data: PageData;
-	let form: FormData;
+	export let data: PageData;
+	export let form: ActionData;
+	$: isAuth = data.isAuth;
 
 	let showModal = false;
 	let modalMode: 'login' | 'register' = 'login';
 	let profileRegisterType: 'user' | 'gym' = 'user';
+
+	if (form?.invalid === true) {
+		showModal = true;
+	}
 </script>
 
 <!-- <div class="background-video-container">
@@ -20,10 +24,13 @@
 </div> -->
 
 <div class="content container">
-	{#if $isAuthenticated}
-		<h1>Dashboard</h1>
-		<div>currently playing songs</div>
-		<div></div>
+	{#if isAuth}
+		<div class="text-center">
+			<h1>Dashboard</h1>
+			<div>currently playing songs</div>
+		</div>
+
+		<p>Welcome back, {data.name}!</p>
 	{:else}
 		<div class="switch-container">
 			<Switch
@@ -34,7 +41,7 @@
 			/>
 		</div>
 		<div class="text-center">
-			<h2>Their gym, our music</h2>
+			<h2>Reccomend gym music</h2>
 			<p>
 				Reccomendations for gym music, tailored to your gym's atmosphere and your clients'
 				preferences.
@@ -43,7 +50,7 @@
 			<button
 				on:click={() => {
 					showModal = true;
-					modalMode = 'login';
+					modalMode = 'register';
 				}}
 			>
 				{#if profileRegisterType === 'user'}
@@ -66,20 +73,20 @@
 				{/if}
 			</button>
 
-			<LoginRegisterModal bind:showModal bind:modalMode bind:profileRegisterType />
+			<LoginRegisterModal bind:showModal bind:modalMode bind:profileRegisterType bind:form />
 		</div>
 	{/if}
 </div>
 
 <style>
-	.background-video-container {
+	/* .background-video-container {
 		position: fixed;
 		top: 0;
 		left: 0;
 		width: 100%;
 		height: 100%;
 		overflow: hidden;
-		z-index: -1; /* Ensure the video is behind other content */
+		z-index: -1;
 	}
 	.background-video {
 		position: absolute;
@@ -90,10 +97,10 @@
 		object-fit: cover;
 		transform: translate(-50%, -50%);
 		opacity: 0.4;
-	}
+	} */
 	.content {
 		position: relative;
-		z-index: 1; /* Ensure content is above the video */
+		z-index: 1;
 	}
 
 	.switch-container {
