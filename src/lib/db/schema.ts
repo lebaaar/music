@@ -1,4 +1,4 @@
-import { pgTable, serial, text, varchar, integer, timestamp, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, varchar, integer, timestamp, pgEnum } from 'drizzle-orm/pg-core';
 
 // Enums
 export const providerEnum = pgEnum('provider', ['email', 'oauth', 'oauth_email']);

@@ -1,4 +1,4 @@
-export type ProviderOptions = "oauth" | "email" | "oauth_email";
+export type ProviderOptions = 'oauth' | 'email' | 'oauth_email';
 
 export interface DecodedJwtPayload {
     userId: number;
