@@ -1,6 +1,9 @@
-import { pgTable, serial, text, varchar, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, varchar, integer, timestamp, pgEnum } from "drizzle-orm/pg-core";
 
-// Gym Table
+// Enums
+export const providerEnum = pgEnum('provider', ['email', 'oauth', 'oauth_email']);
+
+// Tables
 export const gyms = pgTable('gyms', {
     gymId: serial('gym_id').primaryKey(),
     name: varchar('name', { length: 255 }).notNull(),
@@ -14,7 +17,8 @@ export const users = pgTable('users', {
     email: varchar('email', { length: 255 }).notNull().unique(),
     password: text('password'),
     joinedDate: timestamp('joined_date').notNull(),
-    authBy: varchar('authBy', { length: 255 }),
+    provider: providerEnum('provider').notNull(),
+    googleId: varchar('google_id', { length: 255 }),
 });
 
 export const songRequests = pgTable('song_requests', {
