@@ -32,7 +32,7 @@ export const actions = {
         // User exists, check provider
         if (user[0].provider !== 'email') {
             // If same email is used with email, notify user to use Google login
-            return fail(400, { email, password, invalid: true });
+            return fail(400, { email, password, message: "Same user exists with Google OAuth. Sign in with Google instead.", invalid: true });
         }
 
         // Verify password

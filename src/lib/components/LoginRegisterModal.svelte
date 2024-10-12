@@ -27,13 +27,17 @@
 			{/if}
 
 			<form method="POST" action="?/login">
-				{#if form?.missing}<p class="error">The email field is required</p>{/if}
-				{#if form?.incorrect}<p class="error">Invalid credentials!</p>{/if}
 				<label for="email">Email</label>
-				<input type="email" id="email" name="email" required />
+				<input type="email" id="email" name="email" required value={form?.email ?? ''} />
 				<br />
 				<label for="password">Password</label>
-				<input type="password" id="password" name="password" required />
+				<input
+					type="password"
+					id="password"
+					name="password"
+					value={form?.password ?? ''}
+					required
+				/>
 
 				<div class="button-container">
 					<button type="submit" class="text-center">Login</button>
@@ -58,13 +62,19 @@
 
 			<form method="POST" action="?/register">
 				<label for="name">Name</label>
-				<input type="text" id="name" name="name" required />
+				<input type="text" id="name" name="name" value={form?.name ?? ''} required />
 				<br />
 				<label for="email">Email</label>
-				<input type="email" id="email" name="email" required />
+				<input type="email" id="email" name="email" value={form?.email ?? ''} required />
 				<br />
 				<label for="password">Password</label>
-				<input type="password" id="password" name="password" required />
+				<input
+					type="password"
+					id="password"
+					name="password"
+					value={form?.password ?? ''}
+					required
+				/>
 
 				<div class="button-container">
 					<button type="submit" class="text-center">Register</button>
@@ -81,8 +91,15 @@
 			</p>
 		{/if}
 
-		{#if form?.invalid || form?.incorrect || form?.missing}
-			<p>Invalid creds</p>
+		{#if form?.missing}
+			<p class="error">Email and password are required</p>
+		{/if}
+		{#if form?.invalid}
+			{#if form?.message}
+				<p>{form.message}</p>
+			{:else}
+				<p class="error">Invalid creds</p>
+			{/if}
 		{/if}
 	</div>
 </dialog>

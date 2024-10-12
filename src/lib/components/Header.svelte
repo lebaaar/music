@@ -1,17 +1,26 @@
-<script>
+<script lang="ts">
+	import type { DecodedJwtPayload } from '$lib/types/types';
+
 	let isDropdownOpen = false;
 	const toggleDropdown = () => {
 		isDropdownOpen = !isDropdownOpen;
 	};
+
+	export let user: DecodedJwtPayload | null = null;
 </script>
 
 <header class="container mt-2">
-	<form method="post" action="/logout">
-		<button type="submit" class="link-button">Logout</button>
-	</form>
+	{#if user}
+		<form method="POST" action="/logout">
+			<button type="submit" class="link-button">Logout</button>
+		</form>
+	{/if}
+
 	<div class="row d-flex justify-content-center align-items-center">
 		<div class="col-6 text-center">
-			<h1 class="m-0">Gym music</h1>
+			<h1 class="m-0">
+				<a href="/app">Gym music</a>
+			</h1>
 		</div>
 		<div class="col-6 text-end">
 			<img src="default-user.png" class="avatar rounded-circle" style="width: 3rem;" alt="Avatar" />
