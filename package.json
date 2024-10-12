@@ -41,10 +41,9 @@
 	"dependencies": {
 		"@neondatabase/serverless": "^0.9.5",
 		"bcrypt": "^5.1.1",
-		"bootstrap": "^5.3.3",
 		"dotenv": "^16.4.5",
 		"drizzle-orm": "^0.33.0",
-		"google-auth-library": "^9.14.1",
+		"google-auth-library": "^9.14.2",
 		"jsonwebtoken": "^9.0.2",
 		"postgres": "^3.4.4",
 		"supabase": "^1.200.3"

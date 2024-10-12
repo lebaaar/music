@@ -29,6 +29,13 @@
       "when": 1728418083555,
       "tag": "0003_real_big_bertha",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1728727247723,
+      "tag": "0004_even_supreme_intelligence",
+      "breakpoints": true
     }
   ]
 }
