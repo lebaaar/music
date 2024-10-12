@@ -1,19 +1,20 @@
 import { authenticateUser } from "$lib/server/auth";
-import type { Handle } from "@sveltejs/kit";
+import { redirect, type Handle } from "@sveltejs/kit";
 import type { RequestEvent } from "./routes/$types";
 
 
 export const handle: Handle = async ({ event, resolve }) => {
-    // Protect routes
-    // if (event.url.pathname.startsWith("/api")) {
-    //     if (event.url.pathname.startsWith("/admin")) {
-    //         if (event.locals.user.role !== "ADMIN") {
-    //             throw redirect(303, "/protected");
-    //         }
-    //     }
-    // }
-
     event.locals.user = authenticateUser(event as RequestEvent);
+    // Protect routes
+    if (event.url.pathname.startsWith("/app")) {
+        if (!event.locals.user) {
+            throw redirect(303, "/");
+        }
+    } else if (event.url.pathname.startsWith("/")) {
+        if (event.locals.user) {
+            throw redirect(303, "/app");
+        }
+    }
 
     const response = await resolve(event);
     return response;

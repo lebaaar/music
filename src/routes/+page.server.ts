@@ -1,42 +1,16 @@
 import { fail, redirect, type Actions } from "@sveltejs/kit";
-import type { PageServerData, PageServerLoad } from "./$types.js";
 import { WEB_API_URL } from "$lib/const.js";
-import { SECRET_CLIENT_ID, SECRET_CLIENT_SECRET, SECRET_JWT_KEY } from "$env/static/private";
+import { SECRET_CLIENT_ID, SECRET_CLIENT_SECRET } from "$env/static/private";
 
-import jwt from "jsonwebtoken";
 import { OAuth2Client } from "google-auth-library";
 
 import { db } from "$lib/db/index.js";
 import { eq } from 'drizzle-orm';
 import { users } from "$lib/db/schema.js";
 import bcrypt from 'bcrypt';
-import { hashPassword } from "$lib/server/auth.js";
-import type { DecodedJwtPayload } from "$lib/types/types.js";
+import { cookieOptions, generateJwt, hashPassword } from "$lib/server/auth.js";
+import type { ProviderOptions } from "$lib/types/types.js";
 
-export const load: PageServerLoad = async ({ locals }) => {
-    let isAuth = false;
-    let name: string | null = null;
-
-    // Checks locals for user jwt based object
-    const userJwt: DecodedJwtPayload | null = locals.user;
-
-    if (userJwt) {
-        isAuth = true;
-        name = userJwt.name;
-    }
-    else {
-        isAuth = false;
-    }
-
-    // Number of all recommended songs...
-    const recommendedSongs = 0;
-    const data: PageServerData = {
-        recommendedSongs,
-        isAuth,
-        name
-    };
-    return data;
-}
 
 export const actions = {
     login: async ({ cookies, request }) => {
@@ -55,34 +29,29 @@ export const actions = {
             return fail(400, { email, password, invalid: true });
         }
 
+        // User exists, check provider
+        if (user[0].provider !== 'email') {
+            // If same email is used with email, notify user to use Google login
+            return fail(400, { email, password, invalid: true });
+        }
+
         // Verify password
         const validPassword = await bcrypt.compare(password, user[0]?.password ?? '');
         if (!validPassword) {
             return fail(400, { email, password, invalid: true });
         }
 
-        const payload = {
+        const token = generateJwt({
             userId: user[0].userId,
             name: user[0].displayName,
             email: user[0].email,
             joined: user[0].joinedDate,
-            authBy: user[0].authBy
-        };
-        const token = jwt.sign(
-            payload,
-            SECRET_JWT_KEY,
-            { expiresIn: '1h' }
-        );
-
-        cookies.set('jwt', token, {
-            httpOnly: true,   // Prevent access via JavaScript
-            secure: process.env.NODE_ENV === 'production', // Send cookie only over HTTPS in production
-            maxAge: 60 * 60,  // 1 hour
-            sameSite: 'strict', // CSRF protection
-            path: '/' // Path for the cookie
+            provider: user[0].provider as ProviderOptions
         });
 
-        throw redirect(302, '/');
+        cookies.set('jwt', token, cookieOptions);
+
+        throw redirect(302, '/app');
     },
     register: async ({ request, cookies }) => {
         const formData = await request.formData();
@@ -92,47 +61,61 @@ export const actions = {
 
         // Validate input
         if (!email || !plainPassword || !displayName) {
-            return new Response(JSON.stringify({ error: 'Email, password, and display name are required' }), { status: 400 });
+            return fail(400, { email, plainPassword, invalid: true });
         }
 
-        const existingUser = await db.select().from(users).where(eq(users.email, email));
-        if (existingUser.length > 0) {
-            return new Response(JSON.stringify({ error: 'User with this email already exists' }), { status: 409 });
-        }
+        const existingUser = await db.select({
+            email: users.email,
+            provider: users.provider,
+            userId: users.userId
+        }).from(users).where(eq(users.email, email));
+        let userId;
 
         const hashedPassword = await hashPassword(plainPassword);
 
-        const userId = await db.insert(users).values({
-            displayName: displayName,
-            email: email,
-            password: hashedPassword,
-            joinedDate: new Date(),
-            authBy: 'email',
-        }).returning({ userId: users.userId });
+        if (existingUser.length === 0) {
+            // New user
+            const userIdQuery = await db.insert(users).values({
+                displayName: displayName,
+                email: email,
+                password: hashedPassword,
+                joinedDate: new Date(),
+                provider: 'email',
+            }).returning({ userId: users.userId });
+            userId = userIdQuery[0].userId;
+        }
+        else {
+            // User with the same email already exists
+            userId = existingUser[0].userId;
+            if (existingUser[0].provider === 'oauth') {
+                // Same user already exists with Google auth - merge accounts
+                await db.update(users).set({
+                    provider: "oauth_email",
+                    password: hashedPassword
+                }).where(eq(users.userId, existingUser[0].userId));
+                console.log('Register - Same user with oauth already exists - merge accounts');
+            } else {
+                // Different user with the same email already exists
+                console.log('Register - Different user with the same email already exists');
+                return fail(400, { email, plainPassword, invalid: true });
+            }
+        }
 
-        // Generate JWT
-        const payload = {
-            userId: userId[0].userId,
+        console.log('existing user', existingUser);
+        console.log('userId: ', userId);
+
+
+        const token = generateJwt({
+            userId: userId,
             name: displayName,
             email: email,
             joined: new Date(),
-            authBy: 'email'
-        };
-        const token = jwt.sign(
-            payload,
-            SECRET_JWT_KEY,
-            { expiresIn: '1h' }
-        );
-
-        cookies.set('jwt', token, {
-            httpOnly: true,   // Prevent access via JavaScript
-            secure: process.env.NODE_ENV === 'production', // Send cookie only over HTTPS in production
-            maxAge: 60 * 60,  // 1 hour
-            sameSite: 'strict', // CSRF protection
-            path: '/' // Path for the cookie
+            provider: 'email'
         });
 
-        throw redirect(302, '/');
+        cookies.set('jwt', token, cookieOptions);
+
+        throw redirect(302, '/app');
     },
     OAuth2: async () => {
         const redirect_uri = `${WEB_API_URL}/oauth`;

@@ -2,10 +2,7 @@
 	import Switch from '$lib/components/shared/Switch.svelte';
 	import type { ActionData, PageData } from './$types';
 	import LoginRegisterModal from '$lib/components/LoginRegisterModal.svelte';
-
-	export let data: PageData;
 	export let form: ActionData;
-	$: isAuth = data.isAuth;
 
 	let showModal = false;
 	let modalMode: 'login' | 'register' = 'login';
@@ -24,58 +21,49 @@
 </div> -->
 
 <div class="content container">
-	{#if isAuth}
-		<div class="text-center">
-			<h1>Dashboard</h1>
-			<div>currently playing songs</div>
-		</div>
+	<div class="switch-container">
+		<Switch
+			bind:profileRegisterType
+			ariaLabeledBy="account-type"
+			labelLeft="User"
+			labelRight="Gym"
+		/>
+	</div>
+	<div class="text-center">
+		<h2>Reccomend gym music</h2>
+		<p>
+			Reccomendations for gym music, tailored to your gym's atmosphere and your clients'
+			preferences.
+		</p>
 
-		<p>Welcome back, {data.name}!</p>
-	{:else}
-		<div class="switch-container">
-			<Switch
-				bind:profileRegisterType
-				ariaLabeledBy="account-type"
-				labelLeft="User"
-				labelRight="Gym"
-			/>
-		</div>
-		<div class="text-center">
-			<h2>Reccomend gym music</h2>
-			<p>
-				Reccomendations for gym music, tailored to your gym's atmosphere and your clients'
-				preferences.
-			</p>
+		<button
+			on:click={() => {
+				showModal = true;
+				modalMode = 'register';
+			}}
+		>
+			{#if profileRegisterType === 'user'}
+				Register
+			{:else}
+				Register as gym
+			{/if}
+		</button>
+		<button
+			class="secondary-button"
+			on:click={() => {
+				showModal = true;
+				modalMode = 'login';
+			}}
+		>
+			{#if profileRegisterType === 'user'}
+				Login
+			{:else}
+				Login
+			{/if}
+		</button>
 
-			<button
-				on:click={() => {
-					showModal = true;
-					modalMode = 'register';
-				}}
-			>
-				{#if profileRegisterType === 'user'}
-					Register
-				{:else}
-					Register as gym
-				{/if}
-			</button>
-			<button
-				class="secondary-button"
-				on:click={() => {
-					showModal = true;
-					modalMode = 'login';
-				}}
-			>
-				{#if profileRegisterType === 'user'}
-					Login
-				{:else}
-					Login
-				{/if}
-			</button>
-
-			<LoginRegisterModal bind:showModal bind:modalMode bind:profileRegisterType bind:form />
-		</div>
-	{/if}
+		<LoginRegisterModal bind:showModal bind:modalMode bind:profileRegisterType bind:form />
+	</div>
 </div>
 
 <style>

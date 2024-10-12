@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import type { RequestEvent } from '../../routes/$types';
-import type { DecodedJwtPayload } from '$lib/types/types';
+import type { CookieOptions, CreateJwtPayload, DecodedJwtPayload } from '$lib/types/types';
 import jwt from 'jsonwebtoken';
 import { SECRET_JWT_KEY } from '$env/static/private';
 
@@ -21,6 +21,7 @@ export const authenticateUser = (event: RequestEvent): DecodedJwtPayload | null 
     jwt.verify(token, SECRET_JWT_KEY, (err, decoded) => {
         // Check for JWT errros (expired...)
         if (err) {
+            cookies.delete("jwt", { path: "/" });
             return null;
         }
         decodedJwtPayload = decoded as DecodedJwtPayload;
@@ -51,7 +52,24 @@ export async function verifyPassword(plainPassword: string, hashedPassword: stri
     return isMatch;
 }
 
-export function getCookie(name: string, cookies: string): string | null {
-    const cookie = cookies.split(';').find(c => c.trim().startsWith(`${name}=`));
-    return cookie ? cookie.split('=')[1] : null;
+/**
+ * Generate a JWT token
+ * @param payload CreateJwtPayload data to be encoded in the JWT
+ * @param expiresIn expiration time for the JWT (default 1 hour)
+ * @returns JWT token string
+ */
+export function generateJwt(payload: CreateJwtPayload, expiresIn: string = '120d'): string {
+    const token = jwt.sign(payload, SECRET_JWT_KEY, { expiresIn: expiresIn });
+    return token;
 }
+
+/**
+ * Cookie options for JWT
+ */
+export const cookieOptions: CookieOptions = {
+    httpOnly: true,   // Prevent access via JavaScript
+    secure: process.env.NODE_ENV === 'production', // Send cookie only over HTTPS in production
+    maxAge: 120 * 24 * 60 * 60,  // 120 days
+    sameSite: 'strict', // CSRF protection
+    path: '/' // Path for the cookie
+};
