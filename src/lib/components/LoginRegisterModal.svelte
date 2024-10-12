@@ -97,6 +97,8 @@
 		{#if form?.invalid}
 			{#if form?.message}
 				<p>{form.message}</p>
+			{:else if form?.errorMessage}
+				<p class="error">{form.errorMessage}</p>
 			{:else}
 				<p class="error">Invalid creds</p>
 			{/if}

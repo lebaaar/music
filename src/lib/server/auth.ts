@@ -11,8 +11,8 @@ import { SECRET_JWT_KEY } from '$env/static/private';
  */
 export const authenticateUser = (event: RequestEvent): DecodedJwtPayload | null => {
     const { cookies } = event;
-    const token = cookies.get("jwt");
 
+    const token = cookies.get('jwt');
     if (!token) {
         return null;
     }
@@ -21,7 +21,7 @@ export const authenticateUser = (event: RequestEvent): DecodedJwtPayload | null 
     jwt.verify(token, SECRET_JWT_KEY, (err, decoded) => {
         // Check for JWT errros (expired...)
         if (err) {
-            cookies.delete("jwt", { path: "/" });
+            cookies.delete('jwt', { path: '/' });
             return null;
         }
         decodedJwtPayload = decoded as DecodedJwtPayload;
@@ -54,22 +54,27 @@ export async function verifyPassword(plainPassword: string, hashedPassword: stri
 
 /**
  * Generate a JWT token
- * @param payload CreateJwtPayload data to be encoded in the JWT
- * @param expiresIn expiration time for the JWT (default 1 hour)
- * @returns JWT token string
+ * @param {CreateJwtPayload} payload CreateJwtPayload data to be encoded in the JWT
+ * @param {string} expiresIn expiration time for the JWT (default 1 hour)
+ * @returns {string} JWT token string
  */
 export function generateJwt(payload: CreateJwtPayload, expiresIn: string = '120d'): string {
     const token = jwt.sign(payload, SECRET_JWT_KEY, { expiresIn: expiresIn });
     return token;
 }
 
+
 /**
- * Cookie options for JWT
+ * Generates cookie options for setting HTTP cookies.
+ * @param {string} sameSite - The SameSite attribute for the cookie, which can be 'strict', 'none', or 'lax'. Defaults to 'strict'.
+ * @returns {CookieOptions} - Cookies options object
  */
-export const cookieOptions: CookieOptions = {
-    httpOnly: true,   // Prevent access via JavaScript
-    secure: process.env.NODE_ENV === 'production', // Send cookie only over HTTPS in production
-    maxAge: 120 * 24 * 60 * 60,  // 120 days
-    sameSite: 'strict', // CSRF protection
-    path: '/' // Path for the cookie
+export function getCookieOptions(sameSite: 'strict' | 'none' | 'lax' = 'strict'): CookieOptions {
+    return {
+        httpOnly: true,   // Prevent access via JavaScript
+        secure: process.env.NODE_ENV === 'production', // Send cookie only over HTTPS in production
+        maxAge: 120 * 24 * 60 * 60,  // 120 days
+        sameSite: sameSite, // CSRF protection
+        path: '/' // Path for the cookie
+    };
 };

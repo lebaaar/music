@@ -8,7 +8,8 @@
 	let modalMode: 'login' | 'register' = 'login';
 	let profileRegisterType: 'user' | 'gym' = 'user';
 
-	if (form?.invalid === true) {
+	if (form?.invalid === true && form?.modalMode) {
+		modalMode = form.modalMode as 'login' | 'register';
 		showModal = true;
 	}
 </script>
