@@ -1,16 +1,16 @@
 <script lang="ts">
-	import type { DecodedJwtPayload } from '$lib/types/types';
+	import type { DecodedUserJwtPayload, DecodedGymJwtPayload } from '$lib/types/types';
 
 	let isDropdownOpen = false;
 	const toggleDropdown = () => {
 		isDropdownOpen = !isDropdownOpen;
 	};
 
-	export let user: DecodedJwtPayload | null = null;
+	export let account: DecodedUserJwtPayload | DecodedGymJwtPayload | null = null;
 </script>
 
 <header class="container mt-2">
-	{#if user}
+	{#if account}
 		<form method="POST" action="/logout">
 			<button type="submit" class="link-button">Logout</button>
 		</form>

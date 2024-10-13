@@ -1,14 +1,23 @@
-import type { DecodedJwtPayload } from '$lib/types/types';
+import type { DecodedGymJwtPayload, DecodedUserJwtPayload } from '$lib/types/types';
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from '../$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
 
-    // Checks locals for user jwt based object
-    if (!locals.user) {
+    let type: 'user' | 'gym' = 'user';
+    let account: DecodedUserJwtPayload | DecodedGymJwtPayload | null = null;
+    if (locals.user) {
+        type = 'user';
+        account = locals.user as DecodedUserJwtPayload;
+    }
+    else if (locals.gym) {
+        type = 'gym';
+        account = locals.gym as DecodedGymJwtPayload;
+    }
+    else {
+        // User not authenticated, throw redirect to root
         throw redirect(303, '/');
     }
-    const user: DecodedJwtPayload = locals.user;
 
     // Number of all recommended songs...
     const recommendedSongs = [
@@ -29,7 +38,8 @@ export const load: PageServerLoad = async ({ locals }) => {
         }
     ]
     const data = {
-        user,
+        type,
+        account,
         recommendedSongs: recommendedSongs
     };
     return data;

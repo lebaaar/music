@@ -1,6 +1,10 @@
 export type ProviderOptions = 'oauth' | 'email' | 'oauth_email';
 
-export interface DecodedJwtPayload {
+export interface ProfileData {
+    accountType: 'user' | 'gym';
+}
+
+export interface DecodedUserJwtPayload {
     userId: number;
     name: string;
     email: string;
@@ -10,12 +14,30 @@ export interface DecodedJwtPayload {
     iat: number;
 }
 
-export interface CreateJwtPayload {
+export interface DecodedGymJwtPayload {
+    gymId: number;
+    name: string | undefined;
+    email: string;
+    location: string;
+    joined: string;
+    isVerified: boolean;
+    exp: number;
+    iat: number;
+}
+
+export interface CreateUserJwtPayload {
     userId: number;
     name: string;
     email: string;
     joined: Date;
     provider: ProviderOptions;
+}
+
+export interface CreateGymJwtPayload {
+    gymId: number;
+    name: string;
+    location: string;
+    email: string;
 }
 
 export interface CookieOptions {

@@ -1,33 +1,33 @@
 import bcrypt from 'bcrypt';
 import type { RequestEvent } from '../../routes/$types';
-import type { CookieOptions, CreateJwtPayload, DecodedJwtPayload } from '$lib/types/types';
+import type { CookieOptions, DecodedUserJwtPayload, DecodedGymJwtPayload, CreateGymJwtPayload, CreateUserJwtPayload } from '$lib/types/types';
 import jwt from 'jsonwebtoken';
 import { SECRET_JWT_KEY } from '$env/static/private';
 
 /**
  * Return the user object from cookies if the user is authenticated
  * @param {RequestEvent} event - The request event containing cookies
- * @returns {DecodedJwtPayload | null} - The decoded JWT payload if authenticated, otherwise null
+ * @returns {DecodedUserJwtPayload | DecodedGymJwtPayload | null} - The appropriate decoded JWT payload if authenticated, otherwise null
  */
-export const authenticateUser = (event: RequestEvent): DecodedJwtPayload | null => {
+export function authenticateUser(event: RequestEvent): DecodedUserJwtPayload | DecodedGymJwtPayload | null {
     const { cookies } = event;
 
     const token = cookies.get('jwt');
-    if (!token) {
+    if (!token) return null;
+
+
+    try {
+        const decoded = jwt.verify(token, SECRET_JWT_KEY) as DecodedUserJwtPayload | DecodedGymJwtPayload;
+        if ('userId' in decoded) {
+            return decoded as DecodedUserJwtPayload;
+        } else if ('gymId' in decoded) {
+            return decoded as DecodedGymJwtPayload;
+        }
+    } catch (err) {
+        console.error('JWT verification failed:', err);
         return null;
     }
-
-    let decodedJwtPayload: DecodedJwtPayload | null = null;
-    jwt.verify(token, SECRET_JWT_KEY, (err, decoded) => {
-        // Check for JWT errros (expired...)
-        if (err) {
-            cookies.delete('jwt', { path: '/' });
-            return null;
-        }
-        decodedJwtPayload = decoded as DecodedJwtPayload;
-    });
-
-    return decodedJwtPayload;
+    return null;
 }
 
 /**
@@ -54,11 +54,11 @@ export async function verifyPassword(plainPassword: string, hashedPassword: stri
 
 /**
  * Generate a JWT token
- * @param {CreateJwtPayload} payload CreateJwtPayload data to be encoded in the JWT
+ * @param {CreateUserJwtPayload | CreateGymJwtPayload} payload payload data for user/gym to be encoded in the JWT
  * @param {string} expiresIn expiration time for the JWT (default 1 hour)
  * @returns {string} JWT token string
  */
-export function generateJwt(payload: CreateJwtPayload, expiresIn: string = '120d'): string {
+export function generateJwt(payload: CreateUserJwtPayload | CreateGymJwtPayload, expiresIn: string = '120d'): string {
     const token = jwt.sign(payload, SECRET_JWT_KEY, { expiresIn: expiresIn });
     return token;
 }

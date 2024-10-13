@@ -79,10 +79,9 @@ export const GET = async ({ url, cookies }) => {
         });
 
         cookies.set('jwt', token, getCookieOptions('lax'));
-        throw redirect(303, '/app');
     }
     catch (error) {
-        console.error(error);
-        throw redirect(303, '/error');
+        console.log(error);
     }
+    throw redirect(303, '/app');
 };

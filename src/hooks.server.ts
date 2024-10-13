@@ -1,24 +1,39 @@
 import { authenticateUser } from '$lib/server/auth';
 import { redirect, type Handle } from '@sveltejs/kit';
 import type { RequestEvent } from './routes/$types';
+import type { DecodedGymJwtPayload, DecodedUserJwtPayload } from '$lib/types/types';
 
 
 export const handle: Handle = async ({ event, resolve }) => {
-    event.locals.user = authenticateUser(event as RequestEvent);
+    const authenticatedUser = authenticateUser(event as RequestEvent);
+    if (authenticatedUser) {
+        if ('userId' in authenticatedUser) {
+            event.locals.user = authenticatedUser as DecodedUserJwtPayload;
+            event.locals.gym = null;
+        } else if ('gymId' in authenticatedUser) {
+            event.locals.gym = authenticatedUser as DecodedGymJwtPayload;
+            event.locals.user = null;
+        }
+    } else {
+        event.locals.user = null;
+        event.locals.gym = null;
+    }
+
+    const canAccessApp = event.locals.user !== null || event.locals.gym !== null;
+    const isAppPath = event.url.pathname.startsWith('/app');
+    const isRootPath = event.url.pathname === '/';
 
     // Allow logout
     if (event.url.pathname.startsWith('/logout')) {
         return await resolve(event);
     }
 
-    if (event.url.pathname.startsWith('/app')) {
-        if (!event.locals.user) {
-            throw redirect(303, '/');
-        }
-    } else if (event.url.pathname.startsWith('/')) {
-        if (event.locals.user) {
-            throw redirect(303, '/app');
-        }
+    if (isAppPath && !canAccessApp) {
+        throw redirect(303, '/');
+    }
+
+    if (isRootPath && canAccessApp) {
+        throw redirect(303, '/app');
     }
 
     const response = await resolve(event);

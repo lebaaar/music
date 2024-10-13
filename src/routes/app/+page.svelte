@@ -2,14 +2,13 @@
 	export let data;
 </script>
 
-<div class="text-center">
-	<h1>Dashboard</h1>
-	<div>currently playing songs</div>
-</div>
-
-<p>Welcome back, {data.user.name}!</p>
-{#each data.recommendedSongs as song}
-	<ul>
-		<li>{song.album} {song.artist}</li>
-	</ul>
-{/each}
+{#if data.type === 'user'}
+	<p>Welcome back user, {data.account.name}!</p>
+	{#each data.recommendedSongs as song}
+		<ul>
+			<li>{song.album} {song.artist}</li>
+		</ul>
+	{/each}
+{:else if data.type === 'gym'}
+	<p>Welcome gym</p>
+{/if}

@@ -27,6 +27,7 @@
 			{/if}
 
 			<form method="POST" action="?/login">
+				<input type="hidden" name="accountType" id="accountType" value={profileRegisterType} />
 				<label for="email">Email</label>
 				<input type="email" id="email" name="email" required value={form?.email ?? ''} />
 				<br />
@@ -44,9 +45,11 @@
 				</div>
 			</form>
 
-			<div class="my-2">
-				<SignInWithGoogle />
-			</div>
+			{#if profileRegisterType === 'user'}
+				<div class="my-2">
+					<SignInWithGoogle />
+				</div>
+			{/if}
 
 			<p class="mb-0">
 				No account?
@@ -61,6 +64,7 @@
 			{/if}
 
 			<form method="POST" action="?/register">
+				<input type="hidden" name="accountType" id="accountType" value={profileRegisterType} />
 				<label for="name">Name</label>
 				<input type="text" id="name" name="name" value={form?.name ?? ''} required />
 				<br />
@@ -81,9 +85,11 @@
 				</div>
 			</form>
 
-			<div class="my-2">
-				<SignInWithGoogle />
-			</div>
+			{#if profileRegisterType === 'user'}
+				<div class="my-2">
+					<SignInWithGoogle />
+				</div>
+			{/if}
 
 			<p class="mb-0">
 				Already a member?

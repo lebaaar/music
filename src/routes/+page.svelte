@@ -1,7 +1,9 @@
 <script lang="ts">
 	import Switch from '$lib/components/shared/Switch.svelte';
-	import type { ActionData, PageData } from './$types';
+	import type { ActionData } from './$types';
 	import LoginRegisterModal from '$lib/components/LoginRegisterModal.svelte';
+	// import { profileRegisterType } from '$lib/stores/signIn';
+
 	export let form: ActionData;
 
 	let showModal = false;
@@ -9,6 +11,9 @@
 	let profileRegisterType: 'user' | 'gym' = 'user';
 
 	if (form?.invalid === true && form?.modalMode) {
+		if (form?.profileRegisterType) {
+			profileRegisterType = form.profileRegisterType as 'user' | 'gym';
+		}
 		modalMode = form.modalMode as 'login' | 'register';
 		showModal = true;
 	}
