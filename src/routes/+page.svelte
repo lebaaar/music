@@ -2,7 +2,6 @@
 	import Switch from '$lib/components/shared/Switch.svelte';
 	import type { ActionData } from './$types';
 	import LoginRegisterModal from '$lib/components/LoginRegisterModal.svelte';
-	// import { profileRegisterType } from '$lib/stores/signIn';
 
 	export let form: ActionData;
 
@@ -10,7 +9,7 @@
 	let modalMode: 'login' | 'register' = 'login';
 	let profileRegisterType: 'user' | 'gym' = 'user';
 
-	if (form?.invalid === true && form?.modalMode) {
+	if (form?.success === false && form?.modalMode) {
 		if (form?.profileRegisterType) {
 			profileRegisterType = form.profileRegisterType as 'user' | 'gym';
 		}
@@ -100,6 +99,5 @@
 	.switch-container {
 		display: flex;
 		flex-direction: column;
-		align-items: center;
 	}
 </style>
