@@ -10,7 +10,7 @@ import { getCookieOptions, generateJwt } from '$lib/server/auth.js';
 export const GET = async ({ url, cookies }) => {
     const redirect_uri = `${WEB_API_URL}/oauth`;
     const code = await url.searchParams.get('code');
-    if (!code) throw new Error('Authorization code not found');
+    if (!code) throw redirect(303, '/');
 
     try {
         const oauthClient = new OAuth2Client(
@@ -21,7 +21,7 @@ export const GET = async ({ url, cookies }) => {
 
         const { tokens } = await oauthClient.getToken(code);
         oauthClient.setCredentials(tokens);
-        if (!tokens?.id_token) throw new Error('ID token not found');
+        if (!tokens?.id_token) throw redirect(303, '/');
 
         const ticket = await oauthClient.verifyIdToken({
             idToken: tokens.id_token,

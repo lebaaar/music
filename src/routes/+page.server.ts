@@ -1,6 +1,8 @@
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import { WEB_API_URL } from '$lib/const.js';
 import { SECRET_CLIENT_ID, SECRET_CLIENT_SECRET } from '$env/static/private';
+import { getCookieOptions, generateJwt, hashPassword } from '$lib/server/auth.js';
+import type { GymJwtPayload, UserJwtPayload, ProviderOptions } from '$lib/types/types.js';
 
 import { OAuth2Client } from 'google-auth-library';
 
@@ -8,8 +10,18 @@ import { db } from '$lib/db/index.js';
 import { eq } from 'drizzle-orm';
 import { gyms, users } from '$lib/db/schema.js';
 import bcrypt from 'bcrypt';
-import { getCookieOptions, generateJwt, hashPassword } from '$lib/server/auth.js';
-import type { CreateGymJwtPayload, CreateUserJwtPayload, ProviderOptions } from '$lib/types/types.js';
+
+interface ReturnObj {
+    email: string;
+    password: string;
+    modalMode: 'login';
+    profileRegisterType: 'user' | 'gym';
+    success: boolean | undefined;
+    missing: boolean;
+    errorMessage: string | null;
+    message: string | null;
+    [key: string]: unknown;
+}
 
 export const actions = {
     login: async ({ cookies, request }) => {
@@ -17,37 +29,47 @@ export const actions = {
         const email = formData.get('email') as string;
         const password = formData.get('password') as string;
         const accountType = formData.get('accountType') as 'user' | 'gym';
-        console.log('Login - accountType:', accountType);
+
+        const returnObj: ReturnObj = {
+            email: email,
+            password: password,
+            modalMode: 'login',
+            profileRegisterType: accountType,
+            success: undefined,
+            missing: false,
+            errorMessage: null,
+            message: null
+        }
 
         // Validate input
         if (!email || !password) {
-            return fail(400, { email, password, missing: true, modalMode: 'login' });
+            return fail(400, { ...returnObj, success: false, missing: true });
         }
         if (accountType !== 'user' && accountType !== 'gym') {
-            return fail(400, { email, password, invalid: true, modalMode: 'login', errorMessage: 'Invalid account type' });
+            return fail(400, { ...returnObj, success: false, errorMessage: 'Invalid account type' });
         }
 
         if (accountType === 'user') {
             // Check if user exists
             const user = await db.select().from(users).where(eq(users.email, email));
             if (user.length === 0) {
-                return fail(400, { email, password, invalid: true, modalMode: 'login' });
+                return fail(400, { ...returnObj, success: false });
             }
 
             // User exists, check if provider is OAuth
             if (user[0].provider === 'oauth') {
                 // If same email is used with email, notify user to use Google login
-                return fail(400, { email, password, message: 'Same user exists with Google OAuth. Sign in with Google instead.', invalid: true, modalMode: 'login' });
+                return fail(400, { ...returnObj, success: false, message: 'Same user exists with Google OAuth. Sign in with Google instead.' });
             }
 
             // Verify password
             const validPassword = await bcrypt.compare(password, user[0]?.password ?? '');
             if (!validPassword) {
-                return fail(400, { email, password, invalid: true, modalMode: 'login' });
+                return fail(400, { ...returnObj, success: false });
             }
 
             // Generate JWT and set cookie
-            const payload: CreateUserJwtPayload = {
+            const payload: UserJwtPayload = {
                 userId: user[0].userId,
                 name: user[0].displayName,
                 email: user[0].email,
@@ -64,24 +86,28 @@ export const actions = {
 
             if (existingGym.length === 0) {
                 // Gym account doesn't exist, display Invalid creds error
-                return fail(400, { email, password, invalid: true, modalMode: 'register' });
+                return fail(400, { ...returnObj, success: false });
             }
 
             // Verify password
             const validPassword = await bcrypt.compare(password, existingGym[0].password ?? '');
             if (!validPassword) {
-                return fail(400, { email, password, invalid: true, modalMode: 'register' });
+                return fail(400, returnObj);
             }
 
             // Generate JWT and set cookie
-            const payload: CreateGymJwtPayload = {
+            const payload: GymJwtPayload = {
                 gymId: existingGym[0].gymId,
                 name: existingGym[0].name,
-                location: existingGym[0].location ?? 'No location specified',
                 email: existingGym[0].email,
+                location: existingGym[0].location ?? 'No location specified',
+                joined: existingGym[0].joinedDate as unknown as string,
+                isVerified: existingGym[0].isVerified,
             };
             const token = generateJwt(payload);
             cookies.set('jwt', token, getCookieOptions());
+
+            returnObj.success = true;
             throw redirect(303, '/app');
         }
     },
@@ -92,12 +118,24 @@ export const actions = {
         const plainPassword = formData.get('password') as string;
         const accountType = formData.get('accountType') as 'user' | 'gym';
 
+        const returnObj = {
+            email: email,
+            password: plainPassword,
+            name: displayName,
+            modalMode: 'register',
+            profileRegisterType: accountType,
+            success: false,
+            missing: false,
+            errorMessage: null,
+            message: null
+        }
+
         // Validate input
         if (!email || !plainPassword || !displayName) {
-            return fail(400, { email, plainPassword, invalid: true, modalMode: 'register' });
+            return fail(400, { ...returnObj, success: false, missing: true });
         }
         if (accountType !== 'user' && accountType !== 'gym') {
-            return fail(400, { email, plainPassword, invalid: true, modalMode: 'register', errorMessage: 'Invalid account type' });
+            return fail(400, { ...returnObj, success: false, errorMessage: 'Invalid account type' });
         }
 
         const hashedPassword = await hashPassword(plainPassword);
@@ -131,12 +169,12 @@ export const actions = {
                     }).where(eq(users.userId, existingUser[0].userId));
                 } else {
                     // Different user with the same email already exists
-                    return fail(400, { email, plainPassword, invalid: true, modalMode: 'register', errorMessage: 'Email is already in use' });
+                    return fail(400, { ...returnObj, success: false, errorMessage: 'Email is already in use' });
                 }
             }
 
             // Generate JWT and set cookie
-            const payload: CreateUserJwtPayload = {
+            const payload: UserJwtPayload = {
                 userId,
                 name: displayName,
                 email,
@@ -158,7 +196,7 @@ export const actions = {
 
             if (existingGym.length > 0) {
                 // Gym with the same email already exists
-                return fail(400, { email, plainPassword, invalid: true, modalMode: 'register', errorMessage: 'Email is already in use', profileRegisterType: 'gym' });
+                return fail(400, { ...returnObj, success: false, errorMessage: 'Email is already in use' });
             }
 
             const gymIdQuery = await db.insert(gyms).values({
@@ -172,11 +210,13 @@ export const actions = {
             const gymId = gymIdQuery[0].gymId;
 
             // Generate JWT and set cookie
-            const payload: CreateGymJwtPayload = {
+            const payload: GymJwtPayload = {
                 gymId,
                 name: displayName,
                 location: '',
                 email: email,
+                joined: new Date(),
+                isVerified: false
             };
             const token = generateJwt(payload);
             cookies.set('jwt', token, getCookieOptions());

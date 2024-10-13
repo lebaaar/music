@@ -1,13 +1,37 @@
 <script lang="ts">
+	import { applyAction, enhance } from '$app/forms';
+	import { goto, invalidateAll } from '$app/navigation';
+	import type { ActionResult } from '@sveltejs/kit';
+	import type { ActionData } from '../../routes/$types';
 	import SignInWithGoogle from './shared/SignInWithGoogle.svelte';
 	export let showModal: boolean;
 	export let modalMode: 'login' | 'register' = 'login';
 	export let profileRegisterType: 'user' | 'gym' = 'user';
-	export let form;
+	export let form: ActionData | null = null;
 
 	let dialog: HTMLDialogElement;
 
 	$: if (dialog && showModal) dialog.showModal();
+
+	function clearErrors() {
+		if (form) {
+			form.success = undefined;
+			form.missing = false;
+			form.message = null;
+			form.errorMessage = null;
+		}
+	}
+
+	async function handleSubmit() {
+		return async ({ result }: { result: ActionResult }) => {
+			if (result.type === 'redirect') {
+				await invalidateAll();
+				goto(result.location);
+			} else {
+				await applyAction(result);
+			}
+		};
+	}
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-noninteractive-element-interactions -->
@@ -26,18 +50,26 @@
 				<p>Login to your gym profile</p>
 			{/if}
 
-			<form method="POST" action="?/login">
+			<form method="POST" action="?/login" use:enhance={handleSubmit}>
 				<input type="hidden" name="accountType" id="accountType" value={profileRegisterType} />
 				<label for="email">Email</label>
-				<input type="email" id="email" name="email" required value={form?.email ?? ''} />
+				<input
+					type="email"
+					id="email"
+					name="email"
+					required
+					value={form?.email ?? ''}
+					on:input={clearErrors}
+				/>
 				<br />
 				<label for="password">Password</label>
 				<input
 					type="password"
 					id="password"
 					name="password"
-					value={form?.password ?? ''}
 					required
+					value={form?.password ?? ''}
+					on:input={clearErrors}
 				/>
 
 				<div class="button-container">
@@ -63,21 +95,29 @@
 				<p>Create a new gym account</p>
 			{/if}
 
-			<form method="POST" action="?/register">
+			<form method="POST" action="?/register" use:enhance={handleSubmit}>
 				<input type="hidden" name="accountType" id="accountType" value={profileRegisterType} />
 				<label for="name">Name</label>
-				<input type="text" id="name" name="name" value={form?.name ?? ''} required />
+				<input type="text" id="name" name="name" required value={form?.name ?? ''} />
 				<br />
 				<label for="email">Email</label>
-				<input type="email" id="email" name="email" value={form?.email ?? ''} required />
+				<input
+					type="email"
+					id="email"
+					name="email"
+					required
+					value={form?.email ?? ''}
+					on:input={clearErrors}
+				/>
 				<br />
 				<label for="password">Password</label>
 				<input
 					type="password"
 					id="password"
 					name="password"
-					value={form?.password ?? ''}
 					required
+					value={form?.password ?? ''}
+					on:input={clearErrors}
 				/>
 
 				<div class="button-container">
@@ -100,7 +140,7 @@
 		{#if form?.missing}
 			<p class="error">Email and password are required</p>
 		{/if}
-		{#if form?.invalid}
+		{#if form?.success === false}
 			{#if form?.message}
 				<p>{form.message}</p>
 			{:else if form?.errorMessage}
