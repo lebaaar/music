@@ -1,17 +1,17 @@
 import { authenticateUser } from '$lib/server/auth';
 import { redirect, type Handle } from '@sveltejs/kit';
 import type { RequestEvent } from './routes/$types';
-import type { DecodedGymJwtPayload, DecodedUserJwtPayload } from '$lib/types/types';
+import type { GymJwtPayload, UserJwtPayload } from '$lib/types/types';
 
 
 export const handle: Handle = async ({ event, resolve }) => {
     const authenticatedUser = authenticateUser(event as RequestEvent);
     if (authenticatedUser) {
         if ('userId' in authenticatedUser) {
-            event.locals.user = authenticatedUser as DecodedUserJwtPayload;
+            event.locals.user = authenticatedUser as UserJwtPayload;
             event.locals.gym = null;
         } else if ('gymId' in authenticatedUser) {
-            event.locals.gym = authenticatedUser as DecodedGymJwtPayload;
+            event.locals.gym = authenticatedUser as GymJwtPayload;
             event.locals.user = null;
         }
     } else {

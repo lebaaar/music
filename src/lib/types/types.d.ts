@@ -4,40 +4,25 @@ export interface ProfileData {
     accountType: 'user' | 'gym';
 }
 
-export interface DecodedUserJwtPayload {
+export interface UserJwtPayload {
     userId: number;
     name: string;
     email: string;
-    joined: string;
+    joined: Date | string;
     provider: ProviderOptions;
-    exp: number;
-    iat: number;
+    exp?: number;
+    iat?: number;
 }
 
-export interface DecodedGymJwtPayload {
+export interface GymJwtPayload {
     gymId: number;
-    name: string | undefined;
+    name: string;
     email: string;
     location: string;
-    joined: string;
+    joined: Date | string;
     isVerified: boolean;
-    exp: number;
-    iat: number;
-}
-
-export interface CreateUserJwtPayload {
-    userId: number;
-    name: string;
-    email: string;
-    joined: Date;
-    provider: ProviderOptions;
-}
-
-export interface CreateGymJwtPayload {
-    gymId: number;
-    name: string;
-    location: string;
-    email: string;
+    exp?: number
+    iat?: number;
 }
 
 export interface CookieOptions {

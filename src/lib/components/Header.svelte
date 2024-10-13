@@ -1,12 +1,12 @@
 <script lang="ts">
-	import type { DecodedUserJwtPayload, DecodedGymJwtPayload } from '$lib/types/types';
+	import type { UserJwtPayload, GymJwtPayload } from '$lib/types/types';
 
 	let isDropdownOpen = false;
 	const toggleDropdown = () => {
 		isDropdownOpen = !isDropdownOpen;
 	};
 
-	export let account: DecodedUserJwtPayload | DecodedGymJwtPayload | null = null;
+	export let account: UserJwtPayload | GymJwtPayload | null = null;
 </script>
 
 <header class="container mt-2">

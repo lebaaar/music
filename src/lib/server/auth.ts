@@ -1,15 +1,15 @@
 import bcrypt from 'bcrypt';
 import type { RequestEvent } from '../../routes/$types';
-import type { CookieOptions, DecodedUserJwtPayload, DecodedGymJwtPayload, CreateGymJwtPayload, CreateUserJwtPayload } from '$lib/types/types';
+import type { CookieOptions, UserJwtPayload, GymJwtPayload } from '$lib/types/types';
 import jwt from 'jsonwebtoken';
 import { SECRET_JWT_KEY } from '$env/static/private';
 
 /**
  * Return the user object from cookies if the user is authenticated
  * @param {RequestEvent} event - The request event containing cookies
- * @returns {DecodedUserJwtPayload | DecodedGymJwtPayload | null} - The appropriate decoded JWT payload if authenticated, otherwise null
+ * @returns {UserJwtPayload | GymJwtPayload | null} - The appropriate JWT payload if authenticated, otherwise null
  */
-export function authenticateUser(event: RequestEvent): DecodedUserJwtPayload | DecodedGymJwtPayload | null {
+export function authenticateUser(event: RequestEvent): UserJwtPayload | GymJwtPayload | null {
     const { cookies } = event;
 
     const token = cookies.get('jwt');
@@ -17,11 +17,11 @@ export function authenticateUser(event: RequestEvent): DecodedUserJwtPayload | D
 
 
     try {
-        const decoded = jwt.verify(token, SECRET_JWT_KEY) as DecodedUserJwtPayload | DecodedGymJwtPayload;
+        const decoded = jwt.verify(token, SECRET_JWT_KEY) as UserJwtPayload | GymJwtPayload;
         if ('userId' in decoded) {
-            return decoded as DecodedUserJwtPayload;
+            return decoded as UserJwtPayload;
         } else if ('gymId' in decoded) {
-            return decoded as DecodedGymJwtPayload;
+            return decoded as GymJwtPayload;
         }
     } catch (err) {
         console.error('JWT verification failed:', err);
@@ -54,11 +54,11 @@ export async function verifyPassword(plainPassword: string, hashedPassword: stri
 
 /**
  * Generate a JWT token
- * @param {CreateUserJwtPayload | CreateGymJwtPayload} payload payload data for user/gym to be encoded in the JWT
+ * @param {UserJwtPayload | GymJwtPayload} payload payload data for user/gym to be encoded in the JWT
  * @param {string} expiresIn expiration time for the JWT (default 1 hour)
  * @returns {string} JWT token string
  */
-export function generateJwt(payload: CreateUserJwtPayload | CreateGymJwtPayload, expiresIn: string = '120d'): string {
+export function generateJwt(payload: UserJwtPayload | GymJwtPayload, expiresIn: string = '120d'): string {
     const token = jwt.sign(payload, SECRET_JWT_KEY, { expiresIn: expiresIn });
     return token;
 }
