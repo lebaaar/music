@@ -36,6 +36,20 @@
       "when": 1728727247723,
       "tag": "0004_even_supreme_intelligence",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1728816786981,
+      "tag": "0005_charming_cassandra_nova",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1728817890341,
+      "tag": "0006_flawless_shiver_man",
+      "breakpoints": true
     }
   ]
 }
