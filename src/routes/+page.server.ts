@@ -14,7 +14,7 @@ import bcrypt from 'bcrypt';
 interface ReturnObj {
     email: string;
     password: string;
-    modalMode: 'login';
+    modalMode: 'login' | 'register';
     profileRegisterType: 'user' | 'gym';
     success: boolean | undefined;
     missing: boolean;
@@ -92,7 +92,7 @@ export const actions = {
             // Verify password
             const validPassword = await bcrypt.compare(password, existingGym[0].password ?? '');
             if (!validPassword) {
-                return fail(400, returnObj);
+                return fail(400, { ...returnObj, success: false });
             }
 
             // Generate JWT and set cookie
@@ -118,7 +118,7 @@ export const actions = {
         const plainPassword = formData.get('password') as string;
         const accountType = formData.get('accountType') as 'user' | 'gym';
 
-        const returnObj = {
+        const returnObj: ReturnObj = {
             email: email,
             password: plainPassword,
             name: displayName,
