@@ -4,16 +4,6 @@ import { pgTable, serial, text, varchar, integer, timestamp, pgEnum, boolean } f
 export const providerEnum = pgEnum('provider', ['email', 'oauth', 'oauth_email']);
 
 // Tables
-export const gyms = pgTable('gyms', {
-    gymId: serial('gym_id').primaryKey(),
-    name: varchar('name', { length: 255 }).notNull(),
-    email: varchar('email', { length: 255 }).notNull().unique(),
-    password: text('password').notNull(),
-    location: varchar('location', { length: 255 }),
-    joinedDate: timestamp('created_date').notNull(),
-    isVerified: boolean('is_verified').notNull(),
-});
-
 export const users = pgTable('users', {
     userId: serial('user_id').primaryKey(),
     displayName: text('display_name').notNull(),
@@ -22,6 +12,17 @@ export const users = pgTable('users', {
     joinedDate: timestamp('joined_date').notNull(),
     provider: providerEnum('provider').notNull(),
     googleId: varchar('google_id', { length: 255 }),
+    gymId: integer('gym_id').references(() => gyms.gymId),
+});
+
+export const gyms = pgTable('gyms', {
+    gymId: serial('gym_id').primaryKey(),
+    name: varchar('name', { length: 255 }).notNull(),
+    email: varchar('email', { length: 255 }).notNull().unique(),
+    password: text('password').notNull(),
+    location: varchar('location', { length: 255 }),
+    joinedDate: timestamp('created_date').notNull(),
+    isVerified: boolean('is_verified').notNull(),
 });
 
 export const songRequests = pgTable('song_requests', {
