@@ -15,7 +15,7 @@
 
 	function clearErrors() {
 		if (form) {
-			form.success = undefined;
+			form.success = undefined as any;
 			form.missing = false;
 			form.message = null;
 			form.errorMessage = null;

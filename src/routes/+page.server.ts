@@ -68,14 +68,30 @@ export const actions = {
                 return fail(400, { ...returnObj, success: false });
             }
 
-            // Generate JWT and set cookie
             const payload: UserJwtPayload = {
                 userId: user[0].userId,
                 name: user[0].displayName,
                 email: user[0].email,
                 joined: user[0].joinedDate,
-                provider: user[0].provider as ProviderOptions
+                provider: user[0].provider as ProviderOptions,
+                gym: null
             };
+
+            // Check if user has a gym tied to their account
+            if (user[0].gymId) {
+                const gym = await db.select().from(gyms).where(eq(gyms.gymId, user[0].gymId));
+                const gymJwtPayload: GymJwtPayload = {
+                    gymId: gym[0].gymId,
+                    name: gym[0].name,
+                    email: gym[0].email,
+                    location: gym[0].location ?? 'No location specified',
+                    joined: gym[0].joinedDate as unknown as string,
+                    isVerified: gym[0].isVerified,
+                };
+                payload.gym = gymJwtPayload;
+            }
+
+            // Generate JWT and set cookie
             const token = generateJwt(payload);
             cookies.set('jwt', token, getCookieOptions());
             throw redirect(303, '/app');
@@ -180,6 +196,7 @@ export const actions = {
                 email,
                 joined: new Date(),
                 provider: 'email',
+                gym: null
             };
             const token = generateJwt(payload);
             cookies.set('jwt', token, getCookieOptions());

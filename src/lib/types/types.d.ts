@@ -10,6 +10,7 @@ export interface UserJwtPayload {
     email: string;
     joined: Date | string;
     provider: ProviderOptions;
+    gym: GymJwtPayload | null;
     exp?: number;
     iat?: number;
 }
