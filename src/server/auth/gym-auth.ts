@@ -1,1 +1,0 @@
-// Verification logic for gym owners
